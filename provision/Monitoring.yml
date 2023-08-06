@@ -1,0 +1,7 @@
+- name: install monitoring stack
+  hosts: 
+    - server2
+  become: yes
+  roles:
+  - Monitoring
+

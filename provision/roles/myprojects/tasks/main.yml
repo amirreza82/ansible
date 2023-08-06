@@ -1,0 +1,53 @@
+- name: create The group
+  group:
+    name: DevOps
+    state: present
+  tags: [group_mod]
+- name: create The User
+  user:
+    name: amir
+    group: DevOps
+    state: present
+    shell: /bin/bash
+    password: 123
+  tags: [create_user]
+- name: ------ create Directory One -----
+  file:
+    path: /home/directory1
+    state: directory
+    owner: amir
+    group: DevOps
+    mode: 0755
+  tags: [file] 
+- name: copy module Running  
+  file:
+    path: /home/directory1/Info-file
+    state: touch
+    owner: amir
+    group: DevOps
+    mode: 0755
+  tags: [file]
+- name: copy module Running
+  copy:
+      src: /home/Info
+      dest: /home/
+      owner: amir
+      group: DevOps
+      mode: 0644
+  tags: [copy_file]
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
