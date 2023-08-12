@@ -1,0 +1,90 @@
+- name: check service installed
+  service_facts:
+- debug:
+    msg: Docker installed!
+  when: "'docker' in services"
+#- name: if service exitst break playbook
+#  meta: end_play
+#  when: "'docker' in services"
+- name: Make sure a service unit is running and enabled
+  ansible.builtin.systemd:
+    state: started
+    enabled: true
+    name: docker.socket
+  when: "'docker' in services"
+- name: Install aptitude
+  apt:
+        name: aptitude
+        state: latest
+        update_cache: true
+  when: ansible_os_family=="Debian"
+- name: Install required system packages
+  apt:
+        pkg:
+          - apt-transport-https
+          - ca-certificates
+          - curl
+          - software-properties-common
+          - python3-pip
+          - virtualenv
+          - python3-setuptools
+        state: latest
+        update_cache: true
+  when: ansible_os_family=="Debian"
+- name: Add Docker GPG apt Key
+  apt_key:
+        url: https://download.docker.com/linux/ubuntu/gpg
+        state: present
+  when: ansible_os_family=="Debian"
+- name: Add Docker Repository
+  apt_repository:
+        repo: deb https://download.docker.com/linux/ubuntu focal stable
+        state: present
+  when: ansible_os_family=="Debian"
+- name: Update apt and install docker-ce
+  apt:
+        name: docker-ce
+        state: latest
+        update_cache: true
+  when: ansible_os_family=="Debian"
+- name: set mydistribution
+  ansible.builtin.set_fact:
+    mydistribution: "{{ 'rhel' if (ansible_distribution == 'Red Hat Enterprise Linux') else (ansible_distribution | lower) }}"
+- name: Add signing key
+  ansible.builtin.rpm_key:
+    key: "https://download.docker.com/linux/{{ mydistribution }}/gpg"
+    state: present
+- name: Add repository into repo.d list
+  ansible.builtin.yum_repository:
+    name: docker
+    description: docker repository
+    baseurl: "https://download.docker.com/linux/{{ mydistribution }}/$releasever/$basearch/stable"
+    enabled: true
+    gpgcheck: true
+    gpgkey: "https://download.docker.com/linux/{{ mydistribution }}/gpg"
+- name: Install Docker
+  ansible.builtin.yum:
+    name:
+          - docker-ce
+          - docker-ce-cli
+          - containerd.io
+    state: latest
+    update_cache: true
+- name: Install Docker Module for Python
+  pip:
+        name: docker
+
+- name: Pull grafana container ....
+  docker_image:
+       name: "{{ container_image }}"
+       source: pull
+ 
+- name: Create grafana container...
+  docker_container:
+       name: "{{ container_name }}{{ item }}"
+       image: "{{ container_image }}"
+       command: "{{ container_command }}"
+       state: started
+       ports:
+          - "3000:3000"
+  with_sequence: count={{ containers }}

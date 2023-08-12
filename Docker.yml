@@ -1,0 +1,7 @@
+- name: install Docker and run Grafana container
+  hosts: 
+    - server1
+    - server3 
+  become: yes
+  roles:
+  - Docker

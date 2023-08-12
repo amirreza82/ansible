@@ -1,0 +1,7 @@
+
+# vars file for Docker
+---
+containers: 1
+container_name: Grafana
+container_image: grafana/grafana
+container_command: sleep 1d
